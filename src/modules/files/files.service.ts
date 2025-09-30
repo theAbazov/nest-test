@@ -4,6 +4,8 @@ import {
   ForbiddenException,
   InternalServerErrorException,
 } from '@nestjs/common';
+import { TodoNotFoundException } from '../../common/exceptions/todo-not-found.exception';
+import { FileNotFoundException } from '../../common/exceptions/file-not-found.exception';
 import { InjectModel } from '@nestjs/sequelize';
 import { File } from './file.entity';
 import { Todo } from '../todos/todo.entity';
@@ -64,7 +66,7 @@ export class FilesService {
     });
 
     if (!file) {
-      throw new NotFoundException('Файл не найден');
+      throw new FileNotFoundException(id);
     }
 
     return file;

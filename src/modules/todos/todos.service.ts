@@ -5,6 +5,7 @@ import {
   Inject,
   forwardRef,
 } from '@nestjs/common';
+import { TodoNotFoundException } from '../../common/exceptions/todo-not-found.exception';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, WhereOptions } from 'sequelize';
 import { Todo } from './todo.entity';
@@ -145,7 +146,7 @@ export class TodosService {
     });
 
     if (!todo) {
-      throw new NotFoundException('Todo not found');
+      throw new TodoNotFoundException(id);
     }
 
     return todo;

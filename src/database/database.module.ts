@@ -1,9 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { databaseConfig } from '../config/database.config';
-import { User } from '../modules/users/user.entity';
-import { Todo } from '../modules/todos/todo.entity';
+import { databaseConfig } from '../config/database.config'; 
 
 @Module({
   imports: [
