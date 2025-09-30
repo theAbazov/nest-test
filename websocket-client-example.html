@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Client Example - Todo App</title>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .log { background: #f5f5f5; padding: 10px; height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px; }
+        button { margin: 5px; padding: 10px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 3px; }
+        .status { padding: 5px; border-radius: 3px; margin: 5px 0; }
+        .connected { background: #d4edda; color: #155724; }
+        .disconnected { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Client Example - Todo App</h1>
+    
+    <div class="section">
+        <h3>Подключение</h3>
+        <input type="text" id="tokenInput" placeholder="Введите JWT токен" style="width: 400px;">
+        <button onclick="connect()">Подключиться</button>
+        <button onclick="disconnect()">Отключиться</button>
+        <div id="status" class="status disconnected">Отключен</div>
+    </div>
+    
+    <div class="section">
+        <h3>Тестирование событий</h3>
+        <button onclick="joinRoom()">Join Room</button>
+        <button onclick="simulateEventCreated()">Симулировать Created</button>
+        <button onclick="simulateEventUpdated()">Симулировать Updated</button>
+        <button onclick="simulateEventDeleted()">Симулировать Deleted</button>
+        <button onclick="simulateEventCompleted()">Симулировать Completed</button>
+    </div>
+    
+    <div class="section">
+        <h3>Лог событий</h3>
+        <button onclick="clearLog()">Очистить</button>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        let socket = null;
+        const logDiv = document.getElementById('log');
+        const statusDiv = document.getElementById('status');
+
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateStatus(connected) {
+            if (connected) {
+                statusDiv.textContent = 'Подключен';
+                statusDiv.className = 'status connected';
+            } else {
+                statusDiv.textContent = 'Отключен';
+                statusDiv.className = 'status disconnected';
+            }
+        }
+
+        function connect() {
+            const token = document.getElementById('tokenInput').value.trim();
+            
+            if (!token) {
+                alert('Пожалуйста, введите JWT токен');
+                return;
+            }
+
+            if (socket) {
+                socket.disconnect();
+            }
+
+            // Подключаемся к WebSocket серверу
+            socket = io('http://localhost:3000', {
+                auth: {
+                    token: token
+                },
+                transports: ['websocket', 'polling']
+            });
+
+            // Обработчики событий подключения
+            socket.on('connect', () => {
+                log('✅ Подключен к серверу');
+                updateStatus(true);
+            });
+
+            socket.on('disconnect', (reason) => {
+                log(`❌ Отключен от сервера: ${reason}`);
+                updateStatus(false);
+            });
+
+            socket.on('connect_error', (error) => {
+                log(`❌ Ошибка подключения: ${error.message}`);
+                updateStatus(false);
+            });
+
+            // Обработчики кастомных событий
+            socket.on('joined', (data) => {
+                log(`🎉 Успешно присоединился: ${JSON.stringify(data)}`);
+            });
+
+            socket.on('error', (error) => {
+                log(`🚨 Ошибка: ${JSON.stringify(error)}`);
+            });
+
+            // Обработчики TODO событий
+            socket.on('todo:created', (data) => {
+                log(`📝 TODO создан: ${JSON.stringify(data, null, 2)}`);
+            });
+
+            socket.on('todo:updated', (data) => {
+                log(`✏️ TODO обновлен: ${JSON.stringify(data, null, 2)}`);
+            });
+
+            socket.on('todo:deleted', (data) => {
+                log(`🗑️ TODO удален: ${JSON.stringify(data)}`);
+            });
+
+            socket.on('todo:completed', (data) => {
+                log(`✅ TODO завершен: ${JSON.stringify(data, null, 2)}`);
+            });
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+        }
+
+        function joinRoom() {
+            if (!socket) {
+                alert('Сначала подключитесь к серверу');
+                return;
+            }
+            
+            socket.emit('join');
+            log('📤 Отправлено событие: join');
+        }
+
+        function simulateEventCreated() {
+            log('🔮 Симуляция: создайте TODO через API для получения события todo:created');
+        }
+
+        function simulateEventUpdated() {
+            log('🔮 Симуляция: обновите TODO через API для получения события todo:updated');
+        }
+
+        function simulateEventDeleted() {
+            log('🔮 Симуляция: удалите TODO через API для получения события todo:deleted');
+        }
+
+        function simulateEventCompleted() {
+            log('🔮 Симуляция: отметьте TODO как завершенное через API для получения события todo:completed');
+        }
+
+        function clearLog() {
+            logDiv.innerHTML = '';
+        }
+
+        // Автоматически отключаемся при закрытии страницы
+        window.addEventListener('beforeunload', () => {
+            if (socket) {
+                socket.disconnect();
+            }
+        });
+    </script>
+</body>
+</html>

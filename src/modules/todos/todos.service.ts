@@ -13,6 +13,7 @@ import { CreateTodoDto } from '../../common/dto/create-todo.dto';
 import { UpdateTodoDto } from '../../common/dto/update-todo.dto';
 import { FilterTodoDto } from '../../common/dto/filter-todo.dto';
 import { FilesService } from '../files/files.service';
+import { TodoWebSocketGateway } from '../websocket/websocket.gateway';
 import type { JwtPayload } from '../../common/decorators/current-user.decorator';
 
 export interface PaginatedTodos {
@@ -31,6 +32,8 @@ export class TodosService {
     private todoModel: typeof Todo,
     @Inject(forwardRef(() => FilesService))
     private filesService: FilesService,
+    @Inject(forwardRef(() => TodoWebSocketGateway))
+    private websocketGateway: TodoWebSocketGateway,
   ) {}
 
   async create(createTodoDto: CreateTodoDto, user: JwtPayload): Promise<Todo> {
@@ -42,7 +45,16 @@ export class TodosService {
       userId: user.id,
     };
 
-    return this.todoModel.create(todoData);
+    const todo = await this.todoModel.create(todoData);
+
+    // Отправляем WebSocket событие о создании todo
+    try {
+      this.websocketGateway.emitTodoCreated(user.id, todo);
+    } catch (error) {
+      console.error('Failed to emit todo:created event:', error);
+    }
+
+    return todo;
   }
 
   async findAll(
@@ -174,6 +186,13 @@ export class TodosService {
       ],
     });
 
+    // Отправляем WebSocket событие о обновлении todo
+    try {
+      this.websocketGateway.emitTodoUpdated(user.id, todo);
+    } catch (error) {
+      console.error('Failed to emit todo:updated event:', error);
+    }
+
     return todo;
   }
 
@@ -189,10 +208,19 @@ export class TodosService {
     }
     
     await todo.destroy();
+
+    // Отправляем WebSocket событие об удалении todo
+    try {
+      this.websocketGateway.emitTodoDeleted(user.id, id);
+    } catch (error) {
+      console.error('Failed to emit todo:deleted event:', error);
+    }
   }
 
   async toggleComplete(id: string, user: JwtPayload): Promise<Todo> {
     const todo = await this.findOne(id, user);
+    const wasCompleted = todo.completed;
+    
     await todo.update({ completed: !todo.completed });
     await todo.reload({
       include: [
@@ -202,6 +230,19 @@ export class TodosService {
         },
       ],
     });
+
+    // Отправляем WebSocket событие о завершении todo
+    try {
+      if (!wasCompleted && todo.completed) {
+        // Todo было помечено как завершенное
+        this.websocketGateway.emitTodoCompleted(user.id, todo);
+      } else {
+        // Todo было обновлено (статус изменен)
+        this.websocketGateway.emitTodoUpdated(user.id, todo);
+      }
+    } catch (error) {
+      console.error('Failed to emit todo completion event:', error);
+    }
 
     return todo;
   }

@@ -5,11 +5,13 @@ import { TodosController } from './todos.controller';
 import { Todo } from './todo.entity';
 import { User } from '../users/user.entity';
 import { FilesModule } from '../files/files.module';
+import { WebSocketModule } from '../websocket/websocket.module';
 
 @Module({
   imports: [
     SequelizeModule.forFeature([Todo, User]),
     forwardRef(() => FilesModule),
+    forwardRef(() => WebSocketModule),
   ],
   controllers: [TodosController],
   providers: [TodosService],

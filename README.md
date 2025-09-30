@@ -1,123 +1,286 @@
+# 📝 Todo Application с Real-time обновлениями
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Описание
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Полнофункциональное Todo приложение на NestJS с аутентификацией, файловым хранилищем и real-time обновлениями через WebSocket.
 
-## Description
+## ✨ Функциональность
 
-NestJS application with PostgreSQL database integration using Sequelize ORM. This starter repository includes:
+### 🔐 Аутентификация и авторизация
+- JWT аутентификация
+- Регистрация и вход пользователей
+- Защищенные endpoints с guards
+- Хеширование паролей через bcrypt
 
-- Database configuration with PostgreSQL and Sequelize
-- Environment variable configuration
-- Validation with class-validator and class-transformer
-- Modular project structure
+### 📋 Управление Todo
+- CRUD операции для todos
+- Фильтрация и пагинация
+- Приоритеты задач (low, medium, high)
+- Сроки выполнения
+- Статус завершения
 
-## Prerequisites
+### 📎 Файловое хранилище
+- Загрузка файлов к todos
+- Поддержка изображений и PDF
+- Валидация типов файлов
+- Автоматическая очистка при удалении
 
-Make sure you have the following installed:
-- Node.js (v18 or higher)
-- PostgreSQL database
-- npm or yarn
+### 🔄 Real-time обновления
+- WebSocket соединения с JWT аутентификацией
+- Мгновенные уведомления о изменениях
+- События: создание, обновление, удаление, завершение todos
 
-## Database Setup
+## 🚀 Установка и запуск
 
-1. Create a PostgreSQL database
-2. Update the `.env` file with your database credentials:
+### Предварительные требования
+- Node.js >= 16
+- PostgreSQL
+- Yarn package manager
+
+### 1. Установка зависимостей
+```bash
+yarn install
+```
+
+### 2. Настройка окружения
+Создайте `.env` файл в корневом каталоге:
 
 ```env
+# Конфигурация базы данных
 DB_HOST=localhost
 DB_PORT=5432
-DB_USERNAME=your_username
+DB_USERNAME=postgres
 DB_PASSWORD=your_password
-DB_DATABASE=your_database_name
+DB_NAME=todo_app
+
+# JWT конфигурация
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_EXPIRES_IN=7d
+
+# Окружение
+NODE_ENV=development
 ```
 
-## Project setup
+### 3. Настройка базы данных
+Создайте базу данных PostgreSQL:
+
+```sql
+CREATE DATABASE todo_app;
+```
+
+### 4. Запуск приложения
 
 ```bash
-$ npm install
+# Режим разработки с автоперезагрузкой
+yarn start:dev
+
+# Продакшн режим
+yarn build
+yarn start:prod
 ```
 
-## Compile and run the project
+Приложение будет доступно по адресу: `http://localhost:3000`
+
+## 📚 API Документация
+
+### Аутентификация
+
+#### Регистрация
+```http
+POST /auth/register
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123",
+  "username": "testuser"
+}
+```
+
+#### Вход
+```http
+POST /auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+### Todo операции
+
+#### Получение всех todos
+```http
+GET /todos?page=1&limit=10&completed=false&priority=high
+Authorization: Bearer <jwt_token>
+```
+
+#### Создание todo
+```http
+POST /todos
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "title": "Изучить NestJS",
+  "description": "Пройти документацию",
+  "priority": "high",
+  "dueDate": "2025-10-15T10:00:00Z"
+}
+```
+
+#### Обновление todo
+```http
+PATCH /todos/:id
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "completed": true,
+  "priority": "medium"
+}
+```
+
+#### Переключение статуса завершения
+```http
+PATCH /todos/:id/complete
+Authorization: Bearer <jwt_token>
+```
+
+### Файловые операции
+
+#### Загрузка файла
+```http
+POST /files/upload/:todoId
+Authorization: Bearer <jwt_token>
+Content-Type: multipart/form-data
+
+file: <file_data>
+```
+
+#### Скачивание файла
+```http
+GET /files/:id
+Authorization: Bearer <jwt_token>
+```
+
+#### Получение файлов todo
+```http
+GET /todos/:todoId/files
+Authorization: Bearer <jwt_token>
+```
+
+## 🔄 WebSocket Events
+
+### Подключение
+```javascript
+const socket = io('http://localhost:3000', {
+    auth: { token: 'your-jwt-token' }
+});
+
+socket.emit('join');
+```
+
+### События
+- `todo:created` - новый todo создан
+- `todo:updated` - todo обновлен  
+- `todo:deleted` - todo удален
+- `todo:completed` - todo завершен
+
+Подробная документация: [WEBSOCKET_DOCUMENTATION.md](./WEBSOCKET_DOCUMENTATION.md)
+
+## 🏗️ Архитектура
+
+### Модули
+- **AuthModule** - аутентификация и авторизация
+- **UsersModule** - управление пользователями
+- **TodosModule** - CRUD операции для todos
+- **FilesModule** - файловое хранилище
+- **WebSocketModule** - real-time обновления
+
+### База данных
+- **PostgreSQL** с Sequelize ORM
+- Автоматические миграции
+- Связи между сущностями
+
+### Безопасность
+- JWT токены для аутентификации
+- Bcrypt для хеширования паролей
+- Валидация входных данных
+- CORS настройки
+- Проверка прав доступа
+
+## 🧪 Тестирование
 
 ```bash
-# development
-$ npm run start
+# Юнит тесты
+yarn test
 
-# watch mode
-$ npm run start:dev
+# E2E тесты
+yarn test:e2e
 
-# production mode
-$ npm run start:prod
+# Покрытие кода
+yarn test:cov
 ```
 
-## Run tests
+## 📁 Структура проекта
+
+```
+src/
+├── common/                 # Общие компоненты
+│   ├── decorators/         # Декораторы
+│   ├── dto/               # DTOs
+│   └── guards/            # Guards
+├── config/                # Конфигурация
+├── database/              # Настройки БД
+└── modules/               # Функциональные модули
+    ├── auth/              # Аутентификация
+    ├── users/             # Пользователи
+    ├── todos/             # Todos
+    ├── files/             # Файлы
+    └── websocket/         # WebSocket
+```
+
+## 🔧 Разработка
+
+### Код стайл
+Проект использует ESLint и Prettier для форматирования кода:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+yarn lint
+yarn format
 ```
 
-## Deployment
+### Переменные окружения
+Все конфигурации вынесены в переменные окружения для удобства деплоя.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### Логирование
+Используется встроенная система логирования NestJS.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## 🚀 Деплой
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+### Docker
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN yarn install --production
+COPY . .
+RUN yarn build
+EXPOSE 3000
+CMD ["yarn", "start:prod"]
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Переменные для продакшена
+- Измените `JWT_SECRET` на криптографически стойкий ключ
+- Настройте подключение к продакшн БД
+- Обновите CORS настройки для вашего домена
 
-## Resources
+## 📄 Лицензия
 
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+MIT License
