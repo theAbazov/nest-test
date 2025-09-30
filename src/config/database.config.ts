@@ -1,5 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { SequelizeModuleOptions } from '@nestjs/sequelize';
+import { User } from '../modules/users/user.entity';
+import { Todo } from '../modules/todos/todo.entity';
 
 export const databaseConfig = (configService: ConfigService): SequelizeModuleOptions => ({
   dialect: 'postgres',
@@ -8,6 +10,7 @@ export const databaseConfig = (configService: ConfigService): SequelizeModuleOpt
   username: configService.get<string>('DB_USERNAME', 'postgres'),
   password: configService.get<string>('DB_PASSWORD', '1234'),
   database: configService.get<string>('DB_NAME', 'test'),
+  models: [User, Todo],
   autoLoadModels: true,
   synchronize: true,
   logging: false,

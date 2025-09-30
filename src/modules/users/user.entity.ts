@@ -8,7 +8,9 @@ import {
   PrimaryKey,
   Default,
   Unique,
+  HasMany,
 } from 'sequelize-typescript';
+import { Todo } from '../todos/todo.entity';
 
 @Table({
   tableName: 'users',
@@ -47,4 +49,7 @@ export class User extends Model<User> {
 
   @UpdatedAt
   declare updatedAt: Date;
+
+  @HasMany(() => Todo)
+  declare todos: Todo[];
 }
