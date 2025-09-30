@@ -2,6 +2,8 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, WhereOptions } from 'sequelize';
@@ -10,6 +12,7 @@ import { User } from '../users/user.entity';
 import { CreateTodoDto } from '../../common/dto/create-todo.dto';
 import { UpdateTodoDto } from '../../common/dto/update-todo.dto';
 import { FilterTodoDto } from '../../common/dto/filter-todo.dto';
+import { FilesService } from '../files/files.service';
 import type { JwtPayload } from '../../common/decorators/current-user.decorator';
 
 export interface PaginatedTodos {
@@ -26,6 +29,8 @@ export class TodosService {
   constructor(
     @InjectModel(Todo)
     private todoModel: typeof Todo,
+    @Inject(forwardRef(() => FilesService))
+    private filesService: FilesService,
   ) {}
 
   async create(createTodoDto: CreateTodoDto, user: JwtPayload): Promise<Todo> {
@@ -174,6 +179,15 @@ export class TodosService {
 
   async remove(id: string, user: JwtPayload): Promise<void> {
     const todo = await this.findOne(id, user);
+    
+    // Удаляем все связанные файлы
+    try {
+      await this.filesService.deleteFilesByTodo(id);
+    } catch (error) {
+      console.error('Ошибка при удалении файлов todo:', error);
+      // Продолжаем выполнение для удаления самого todo
+    }
+    
     await todo.destroy();
   }
 

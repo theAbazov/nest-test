@@ -11,6 +11,7 @@ import {
   HasMany,
 } from 'sequelize-typescript';
 import { Todo } from '../todos/todo.entity';
+import { File } from '../files/file.entity';
 
 @Table({
   tableName: 'users',
@@ -52,4 +53,7 @@ export class User extends Model<User> {
 
   @HasMany(() => Todo)
   declare todos: Todo[];
+
+  @HasMany(() => File)
+  declare files: File[];
 }

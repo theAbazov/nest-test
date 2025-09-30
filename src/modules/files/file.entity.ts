@@ -9,22 +9,15 @@ import {
   Default,
   ForeignKey,
   BelongsTo,
-  HasMany,
 } from 'sequelize-typescript';
+import { Todo } from '../todos/todo.entity';
 import { User } from '../users/user.entity';
-import { File } from '../files/file.entity';
-
-export enum TodoPriority {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-}
 
 @Table({
-  tableName: 'todos',
+  tableName: 'files',
   timestamps: true,
 })
-export class Todo extends Model<Todo> {
+export class File extends Model<File> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column({
@@ -37,33 +30,41 @@ export class Todo extends Model<Todo> {
     type: DataType.STRING,
     allowNull: false,
   })
-  declare title: string;
+  declare filename: string;
 
   @Column({
-    type: DataType.TEXT,
-    allowNull: true,
-  })
-  declare description: string | null;
-
-  @Default(false)
-  @Column({
-    type: DataType.BOOLEAN,
+    type: DataType.STRING,
     allowNull: false,
   })
-  declare completed: boolean;
+  declare originalName: string;
 
-  @Default(TodoPriority.MEDIUM)
   @Column({
-    type: DataType.ENUM(...Object.values(TodoPriority)),
+    type: DataType.STRING,
     allowNull: false,
   })
-  declare priority: TodoPriority;
+  declare mimetype: string;
 
   @Column({
-    type: DataType.DATE,
-    allowNull: true,
+    type: DataType.INTEGER,
+    allowNull: false,
   })
-  declare dueDate: Date | null;
+  declare size: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  declare path: string;
+
+  @ForeignKey(() => Todo)
+  @Column({
+    type: DataType.UUID,
+    allowNull: false,
+  })
+  declare todoId: string;
+
+  @BelongsTo(() => Todo)
+  declare todo: Todo;
 
   @ForeignKey(() => User)
   @Column({
@@ -80,7 +81,4 @@ export class Todo extends Model<Todo> {
 
   @UpdatedAt
   declare updatedAt: Date;
-
-  @HasMany(() => File)
-  declare files: File[];
 }
