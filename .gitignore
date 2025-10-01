@@ -1,6 +1,36 @@
 node_modules
 dist
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 *.log
 uploads/*
 !uploads/.gitkeep
+
+# Docker
+docker-compose.override.yml
+.docker
+
+# Database
+*.db
+*.sqlite
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage
+.nyc_output
+
+# Temporary files
+.tmp
+.temp

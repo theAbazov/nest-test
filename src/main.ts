@@ -22,9 +22,10 @@ async function bootstrap() {
 
   // CORS настройки
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: true, // Разрешаем все источники для разработки (file://, localhost и т.д.)
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   // Swagger документация
@@ -56,7 +57,7 @@ async function bootstrap() {
       tagsSorter: 'alpha',
       operationsSorter: 'method',
     },
-    customSiteTitle: 'Todo API Documentation',
+    customSiteTitle: 'Todo API Documentation V1',
   });
 
   const port = process.env.PORT ?? 3000;

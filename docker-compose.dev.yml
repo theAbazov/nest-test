@@ -1,0 +1,54 @@
+# Development Docker Compose override
+version: '3.8'
+
+services:
+  # Development configuration for the app
+  app:
+    build:
+      target: development
+      args:
+        NODE_ENV: development
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      # Development database connection
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME:-todo_user}
+      DB_PASSWORD: ${DB_PASSWORD:-dev_password}
+      DB_NAME: ${DB_NAME:-todo_app_dev}
+      # JWT
+      JWT_SECRET: ${JWT_SECRET:-development-secret-key}
+      JWT_EXPIRES_IN: 7d
+      # Enable reliable file watching inside Docker on Windows/macOS
+      CHOKIDAR_USEPOLLING: 'true'
+      CHOKIDAR_INTERVAL: 200
+      WATCHPACK_POLLING: 'true'
+      # Force TypeScript (tsc) to use polling watchers
+      TSC_WATCHFILE: UsePolling
+      TSC_WATCHDIRECTORY: UsePolling
+      TSC_WATCHFILE_POLLING_INTERVAL: '200'
+    volumes:
+      # Mount source code for hot reload
+      - .:/app
+      - /app/node_modules
+      - uploads_data:/app/uploads
+    command: yarn dev # Это для того чтобы контейнер видел изменения в коде и перезагружался. По сути это yarn start:dev
+    ports:
+      - '3000:3000'
+      - '9229:9229' # Debug port
+
+  # Development database
+  postgres:
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-todo_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dev_password}
+      POSTGRES_DB: ${DB_NAME:-todo_app_dev}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_dev_data:
+  uploads_data:
